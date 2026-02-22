@@ -4,7 +4,6 @@ The Intelligent C Programming Library
 
 ---
 
-```markdown
 # CM Library v3.1.1 Documentation
 
 <div align="center">
