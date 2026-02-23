@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CM Library v4.2.1 – modern docs</title>
+    <!-- Font & Icons (clean, minimal) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.2s ease;
+            scroll-behavior: smooth;
+        }
+
+        /* Light theme (default) */
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-code: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --accent: #2563eb;
+            --accent-light: #3b82f6;
+            --border: #e2e8f0;
+            --card-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.02);
+            --hover-bg: #f1f5f9;
+            --header-bg: rgba(255,255,255,0.8);
+            --code-bg: #0f172a;
+            --code-text: #e2e8f0;
+            --table-stripe: #f8fafc;
+        }
+
+        /* dark mode */
+        body.dark {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --bg-code: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --accent: #60a5fa;
+            --accent-light: #93c5fd;
+            --border: #334155;
+            --card-shadow: 0 20px 30px -10px rgba(0,0,0,0.6);
+            --hover-bg: #2d3a4f;
+            --header-bg: rgba(15, 23, 42, 0.8);
+            --code-bg: #020617;
+            --code-text: #e2e8f0;
+            --table-stripe: #1e293b;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        /* glass header */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(12px);
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 0.9rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.4rem;
+        }
+
+        .logo-area i {
+            color: var(--accent);
+            font-size: 1.8rem;
+        }
+
+        .badge-container {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 0.3rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .badge i {
+            color: var(--accent);
+            margin-right: 6px;
+        }
+
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 40px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--hover-bg);
+        }
+
+        /* main layout */
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(145deg, var(--accent), #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+
+        .subhead {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            border-left: 5px solid var(--accent);
+            padding-left: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--accent);
+            font-size: 2rem;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 1.8rem 1.5rem;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s ease, border-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-light);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 1.2rem;
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .card p {
+            color: var(--text-secondary);
+        }
+
+        /* comparison table */
+        .comp-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            margin: 2rem 0;
+        }
+
+        .comp-table th {
+            background: var(--accent);
+            color: white;
+            font-weight: 600;
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .comp-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comp-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .comp-table tr:nth-child(even) {
+            background: var(--table-stripe);
+        }
+
+        .comp-table td:first-child {
+            font-weight: 600;
+        }
+
+        /* code blocks */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 18px;
+            overflow-x: auto;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 1.8rem 0;
+            box-shadow: inset 0 0 0 1px var(--border);
+        }
+
+        code {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+
+        .inline-code {
+            background: var(--bg-code);
+            color: var(--accent);
+            padding: 0.2rem 0.5rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border);
+        }
+
+        /* toc sidebar */
+        .toc-wrapper {
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            padding-right: 1rem;
+        }
+
+        .toc {
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            padding: 1.8rem 1.2rem;
+            border: 1px solid var(--border);
+        }
+
+        .toc h4 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toc ul {
+            list-style: none;
+        }
+
+        .toc li {
+            margin-bottom: 0.6rem;
+        }
+
+        .toc a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .toc a:hover {
+            color: var(--accent);
+            transform: translateX(5px);
+        }
+
+        .toc a i {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 2rem;
+        }
+
+        /* animated blobs */
+        .blob {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle at 30% 50%, var(--accent-light), transparent 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.2;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        #blob1 {
+            top: -100px;
+            left: -100px;
+        }
+        #blob2 {
+            bottom: -50px;
+            right: -50px;
+            background: radial-gradient(circle, #a78bfa, transparent);
+        }
+
+        /* feature badges */
+        .feature-badge {
+            background: linear-gradient(145deg, var(--accent), #6366f1);
+            color: white;
+            padding: 0.25rem 1rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        hr {
+            border: none;
+            border-top: 2px solid var(--border);
+            margin: 2rem 0;
+        }
+
+        /* animation */
+        .fade-up {
+            animation: fadeUp 0.6s ease both;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* responsive */
+        @media (max-width: 900px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+            .toc-wrapper {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- floating blobs (smooth) -->
+    <div class="blob" id="blob1"></div>
+    <div class="blob" id="blob2"></div>
+
+    <!-- header -->
+    <header class="sticky-header">
+        <div class="logo-area">
+            <i class="fas fa-cube"></i>
+            <span>CM Library <span style="color: var(--accent);">v4.2.1</span></span>
+        </div>
+        <div class="badge-container">
+            <span class="badge"><i class="fas fa-check-circle"></i> GC + Arena</span>
+            <span class="badge"><i class="fas fa-bolt"></i> Thread-safe</span>
+            <span class="badge"><i class="fas fa-paint-brush"></i> OOP macros</span>
+            <span class="badge"><i class="fas fa-shield-alt"></i> 100% memory safe</span>
+        </div>
+        <div class="theme-toggle" id="theme-toggle">
+            <i class="fas fa-moon"></i>
+            <span>Dark</span>
+        </div>
+    </header>
+
+    <div class="container two-col">
+        <!-- Table of contents (sticky) -->
+        <aside class="toc-wrapper">
+            <div class="toc">
+                <h4><i class="fas fa-list-ul" style="color: var(--accent);"></i> Contents</h4>
+                <ul>
+                    <li><a href="#intro"><i class="fas fa-chevron-right"></i> Intro</a></li>
+                    <li><a href="#quickstart"><i class="fas fa-chevron-right"></i> Quick start</a></li>
+                    <li><a href="#memory"><i class="fas fa-chevron-right"></i> Memory system</a></li>
+                    <li><a href="#arena"><i class="fas fa-chevron-right"></i> Arena allocator</a></li>
+                    <li><a href="#gc"><i class="fas fa-chevron-right"></i> GC</a></li>
+                    <li><a href="#string"><i class="fas fa-chevron-right"></i> String</a></li>
+                    <li><a href="#array"><i class="fas fa-chevron-right"></i> Array</a></li>
+                    <li><a href="#map"><i class="fas fa-chevron-right"></i> Map</a></li>
+                    <li><a href="#error"><i class="fas fa-chevron-right"></i> Error handling</a></li>
+                    <li><a href="#oop"><i class="fas fa-chevron-right"></i> OOP macros</a></li>
+                    <li><a href="#threads"><i class="fas fa-chevron-right"></i> Thread safety</a></li>
+                    <li><a href="#examples"><i class="fas fa-chevron-right"></i> Examples</a></li>
+                    <li><a href="#api"><i class="fas fa-chevron-right"></i> API ref</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- main content -->
+        <main>
+            <h1 class="fade-up">C Multitask Intelligent Library</h1>
+            <div class="subhead">The ultimate C programming intelligence layer — Arena + GC, OOP, thread-safe.</div>
+            
+            <!-- intro section -->
+            <section id="intro">
+                <div class="section-title"><i class="fas fa-rocket"></i> Introduction</div>
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <p><span class="feature-badge">NEW</span> <span class="feature-badge">ARENA 4.2.1</span></p>
+                    <p><strong>CM Library</strong> transforms C into a modern language with zero dependencies. Two‑tier memory: <span class="inline-code">arena</span> (fast bump) + <span class="inline-code">GC</span> (flexible).</p>
+                    <div style="display: flex; flex-wrap: wrap; gap: 2rem; margin-top: 1.5rem;">
+                        <div><i class="fas fa-check" style="color: var(--accent);"></i> Automatic GC</div>
+                        <div><i class="fas fa-check" style="color: var(--accent);"></i> Arena allocator</div>
+                        <div><i class="fas fa-check" style="color: var(--accent);"></i> Thread-safe</div>
+                        <div><i class="fas fa-check" style="color: var(--accent);"></i> OOP macros</div>
+                        <div><i class="fas fa-check" style="color: var(--accent);"></i> 3k LOC, 100% safe</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- quick start -->
+            <section id="quickstart">
+                <div class="section-title"><i class="fas fa-hourglass-start"></i> Quick start</div>
+                <pre><code>#include "CM.h"
+
+int main() {
+    CM_ABOUT();                     // show banner
+    String* name = String_new("Adham Hossam");
+    name->print(name);
+    String_delete(name);
+    CM_REPORT();                    // GC stats
+    return 0;
+}</code></pre>
+                <p>Compile: <span class="inline-code">gcc main.c CM.c -o prog -lpthread -lm</span></p>
+            </section>
+
+            <!-- memory system -->
+            <section id="memory">
+                <div class="section-title"><i class="fas fa-memory"></i> Memory system</div>
+                <div class="card-grid">
+                    <div class="card"><i class="fas fa-bolt card-icon"></i><h3>Arena tier</h3><p>Bump allocator, no tracking, instant bulk free.</p></div>
+                    <div class="card"><i class="fas fa-recycle card-icon"></i><h3>GC tier</h3><p>Mark&Sweep + refcounting, thread‑safe.</p></div>
+                    <div class="card"><i class="fas fa-chart-line card-icon"></i><h3>Unified stats</h3><p>Single <code>CMMemorySystem</code> tracks both.</p></div>
+                </div>
+                <pre><code>static CMMemorySystem cm_mem = {
+    .head = NULL, .total_memory = 0,
+    .current_arena = NULL, .peak_memory = 0
+};</code></pre>
+            </section>
+
+            <!-- arena section -->
+            <section id="arena">
+                <div class="section-title"><i class="fas fa-tachometer-alt"></i> Arena allocator <span style="font-size:1rem; background: var(--accent); color:white; padding:0.2rem 0.8rem; border-radius:30px; margin-left:1rem;">v4.2.1 new</span></div>
+                <p>Create 1MB arena: <span class="inline-code">CMArena* a = cm_arena_create(1024*1024);</span></p>
+                <pre><code>CM_WITH_ARENA(4096) {
+    char* buf = (char*)cm_alloc(100, "temp", __FILE__, __LINE__);
+    sprintf(buf, "⚡ fast!");
+    printf("%s\n", buf);
+} // arena destroyed automatically</code></pre>
+                <table class="comp-table">
+                    <tr><th>Operation</th><th>Arena</th><th>GC</th><th>malloc</th></tr>
+                    <tr><td>Speed</td><td>⚡⚡⚡⚡⚡</td><td>⚡⚡⚡</td><td>⚡⚡</td></tr>
+                    <tr><td>Free</td><td>instant (arena destroy)</td><td>automatic</td><td>manual</td></tr>
+                    <tr><td>Tracking</td><td>none</td><td>full</td><td>none</td></tr>
+                </table>
+            </section>
+
+            <!-- GC -->
+            <section id="gc">
+                <div class="section-title"><i class="fas fa-recycle"></i> Garbage collector</div>
+                <p><span class="inline-code">cm_gc_collect()</span> sweeps unreachable objects. Thread‑safe mutex inside.</p>
+                <pre><code>String* s = String_new("leak?");
+cm_retain(s);      // ref=2
+cm_free(s);        // ref=1  (still alive)
+cm_gc_collect();   // does nothing, ref>0
+cm_free(s);        // ref=0 -> freed</code></pre>
+            </section>
+
+            <!-- string class -->
+            <section id="string">
+                <div class="section-title"><i class="fas fa-font"></i> String class</div>
+                <pre><code>String* msg = String_new("  Hello ");
+msg->upper(msg);                // "  HELLO "
+msg->concat(msg, "World!");
+printf("len: %d\n", msg->length_func(msg));
+msg->print(msg);
+String_delete(msg);</code></pre>
+            </section>
+
+            <!-- array class -->
+            <section id="array">
+                <div class="section-title"><i class="fas fa-layer-group"></i> Array class</div>
+                <pre><code>Array* nums = Array_new(sizeof(int), 4);
+for (int i=0; i<10; i++) nums->push(nums, &i);
+int* first = (int*)nums->get(nums, 0);
+printf("%d\n", *first);
+Array_delete(nums);</code></pre>
+            </section>
+
+            <!-- map class -->
+            <section id="map">
+                <div class="section-title"><i class="fas fa-map"></i> Map class</div>
+                <pre><code>Map* dict = Map_new();
+int age = 25;
+dict->set(dict, "age", &age);
+int* a = (int*)dict->get(dict, "age");
+printf("age: %d\n", *a);
+Map_delete(dict);</code></pre>
+            </section>
+
+            <!-- error handling -->
+            <section id="error">
+                <div class="section-title"><i class="fas fa-exclamation-triangle"></i> Error handling</div>
+                <pre><code>cmTry {
+    int* p = NULL;
+    if (!p) cmThrow(CM_ERROR_NULL_POINTER, "null!");
+} cmCatch {
+    printf("caught: %s\n", cmErrorMsg());
+}</code></pre>
+            </section>
+
+            <!-- OOP macros -->
+            <section id="oop">
+                <div class="section-title"><i class="fas fa-cubes"></i> OOP macros</div>
+                <pre><code>class(Person) {
+    property(char*, name);
+    method(speak, void);
+} end_class;
+
+void Person_speak(Person* this) {
+    printf("Hi, I'm %s\n", this->name);
+}
+// usage: send(&p, speak);</code></pre>
+            </section>
+
+            <!-- thread safety -->
+            <section id="threads">
+                <div class="section-title"><i class="fas fa-threads"></i> Thread safety</div>
+                <p>All operations are mutex‑protected (GC + arena locks).</p>
+                <pre><code>void* thread_fn(void* arg) {
+    String* s = String_new("safe");
+    s->print(s);
+    String_delete(s);
+    return NULL;
+}
+// create 5 threads – no data race</code></pre>
+            </section>
+
+            <!-- examples -->
+            <section id="examples">
+                <div class="section-title"><i class="fas fa-code"></i> Complete examples</div>
+                <p><strong>Student management + game entity + request parser</strong> (full listings in doc). Here's a taste:</p>
+                <pre><code>// student + arena
+CM_WITH_ARENA(8192) {
+    Array* students = Array_new(sizeof(Student),3);
+    Student adham = {String_new("Adham"),25,3.8};
+    students->push(students, &adham);
+    // automatically freed after arena
+}</code></pre>
+            </section>
+
+            <!-- api ref condensed -->
+            <section id="api">
+                <div class="section-title"><i class="fas fa-book-open"></i> API snapshot</div>
+                <table class="comp-table">
+                    <tr><th>Category</th><th>Functions</th></tr>
+                    <tr><td>Arena</td><td><code>cm_arena_create/destroy/push/pop</code> + macro</td></tr>
+                    <tr><td>GC</td><td><code>cm_alloc, free, retain, gc_collect, gc_stats</code></td></tr>
+                    <tr><td>String</td><td><code>String_new/delete, concat, upper, lower, print, length_func, charAt</code></td></tr>
+                    <tr><td>Array</td><td><code>Array_new/delete, push, pop, get, size</code></td></tr>
+                    <tr><td>Map</td><td><code>Map_new/delete, set, get, has, size_func</code></td></tr>
+                    <tr><td>Error</td><td><code>cmTry, cmCatch, cmThrow, cmErrorMsg, cm_error_string</code></td></tr>
+                </table>
+            </section>
+            <hr>
+            <div style="text-align:center; padding:2rem 0;">
+                <i class="fas fa-crown" style="color: gold; font-size: 2rem;"></i>
+                <p style="color: var(--text-muted);">Adham Hossam — MIT License — 2026</p>
+                <span class="badge"><i class="fab fa-github"></i> ALightbolt4G/CM</span>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        (function() {
+            // theme toggle with animation
+            const toggle = document.getElementById('theme-toggle');
+            const body = document.body;
+
+            function setTheme(theme) {
+                if (theme === 'dark') {
+                    body.classList.add('dark');
+                    toggle.innerHTML = '<i class="fas fa-sun"></i><span>Light</span>';
+                } else {
+                    body.classList.remove('dark');
+                    toggle.innerHTML = '<i class="fas fa-moon"></i><span>Dark</span>';
+                }
+            }
+
+            // init from localStorage
+            const saved = localStorage.getItem('cm-theme');
+            if (saved === 'dark') setTheme('dark');
+            else setTheme('light');
+
+            toggle.addEventListener('click', () => {
+                if (body.classList.contains('dark')) {
+                    setTheme('light');
+                    localStorage.setItem('cm-theme', 'light');
+                } else {
+                    setTheme('dark');
+                    localStorage.setItem('cm-theme', 'dark');
+                }
+            });
+
+            // smooth hash scroll
+            document.querySelectorAll('.toc a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href').substring(1);
+                    const el = document.getElementById(targetId);
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // tiny interactive effect: move blobs with mouse (gentle parallax)
+            let blob1 = document.getElementById('blob1');
+            let blob2 = document.getElementById('blob2');
+            document.addEventListener('mousemove', (e) => {
+                let x = e.clientX / window.innerWidth;
+                let y = e.clientY / window.innerHeight;
+                if (blob1) {
+                    blob1.style.transform = `translate(${x * 20}px, ${y * 20}px)`;
+                }
+                if (blob2) {
+                    blob2.style.transform = `translate(${-x * 20}px, ${-y * 20}px)`;
+                }
+            });
+
+            // fade-up on scroll (simple)
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-up');
+                    }
+                });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.section-title, .card, pre').forEach(el => observer.observe(el));
+        })();
+    </script>
+</body>
+</html>
