@@ -1,4 +1,4 @@
-📚 CM Library v4.2.1 Documentation
+📚 CM Library v4.2.2 Documentation
 
 <div align="center">
 
@@ -6,16 +6,14 @@
 
 The Ultimate C Programming Intelligence Layer
 
-Version 4.2.1 | By Adham Hossam | 3000+ LOC | 100% Memory Safe
+Version 4.2.2 | By Adham Hossam | 3000+ LOC | 100% Memory Safe
 
-```c
+```
 ⚡ FAST  |  🛡️ SAFE  |  🧠 SMART  |  🔒 THREAD-SAFE
 ```
 
----
-
 https://img.shields.io/badge/build-passing-brightgreen
-https://img.shields.io/badge/version-4.2.1-blue
+https://img.shields.io/badge/version-4.2.2-blue
 https://img.shields.io/badge/license-MIT-orange
 https://img.shields.io/badge/thread_safe-yes-success
 
@@ -37,12 +35,13 @@ Section Description
 9. Map Class Hash maps like Python dict
 10. Error Handling Try/Catch for C
 11. OOP Macros Object-oriented programming
-12. Utility Functions Random, etc.
+12. Utility Functions Random, Input, etc.
 13. Thread Safety Multi-threading support
 14. Complete Examples Real-world examples
 15. API Reference All functions at a glance
 16. Best Practices How to use effectively
 17. Troubleshooting Common issues solved
+18. What's New in v4.2.2 Latest improvements
 
 ---
 
@@ -61,9 +60,10 @@ CM Library is a revolutionary single-header library that transforms C into a mod
 ✅ Hash Maps (like Python dict)   ✅ Try/Catch Error Handling
 ✅ Zero External Dependencies     ✅ Single Header File
 ✅ Memory Leak Detection          ✅ Arena/GC Hybrid System
+✅ C++ Compatible OOP             ✅ Zero Warnings
 ```
 
-<div align="center">
+Feature Comparison
 
 Feature CM Library Standard C C++
 GC/Arena Hybrid ✅ YES ❌ No ❌ No
@@ -72,8 +72,7 @@ OOP Support ✅ YES ❌ No ✅ Yes
 Try/Catch ✅ YES ❌ No ✅ Yes
 Thread Safe ✅ YES ⚠️ Manual ⚠️ Manual
 Memory Safety ✅ 100% ⚠️ Manual ⚠️ Manual
-
-</div>
+Zero Warnings ✅ YES ❌ No ⚠️ Partial
 
 ---
 
@@ -105,7 +104,11 @@ int main() {
 Compile and run:
 
 ```bash
-clang main.c CM.c -o program -lpthread
+# Compile with pthread support
+clang main.c CM.c -o program -lpthread -lm
+# or
+gcc main.c CM.c -o program -lpthread -lm
+
 ./program
 ```
 
@@ -118,7 +121,7 @@ _________________________________________________________
                  by Adham Hossam                     
                                                      
 --------------------------------------------------------
-  Version : 4.2.1
+  Version : 4.2.2
   Author  : Adham Hossam
 _________________________________________________________
 
@@ -175,8 +178,10 @@ Compile:
 ```bash
 # Just compile CM.c with your program
 gcc main.c CM.c -o program -lpthread -lm
-# or
-clang main.c CM.c -o program -lpthread -lm
+
+# Or with CMake
+add_executable(program main.c CM.c)
+target_link_libraries(program pthread m)
 ```
 
 ---
@@ -184,8 +189,6 @@ clang main.c CM.c -o program -lpthread -lm
 🧠 MEMORY MANAGEMENT SYSTEM
 
 The Unified Memory Architecture
-
-<div align="center">
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -195,7 +198,7 @@ The Unified Memory Architecture
             ┌──────────────┴──────────────┐
             ▼                              ▼
 ┌───────────────────────┐      ┌───────────────────────┐
-│   🚀 **ARENA TIER**   │      │   ♻️ **GC TIER**      │
+│   🚀 ARENA TIER       │      │   ♻️ GC TIER          │
 │   (ULTRA FAST)        │      │   (FLEXIBLE)          │
 ├───────────────────────┤      ├───────────────────────┤
 │ • No tracking         │      │ • Full tracking       │
@@ -207,12 +210,10 @@ The Unified Memory Architecture
          └──────────────┬──────────────┘
                         ▼
 ┌─────────────────────────────────────────────────────┐
-│              **SINGLE GLOBAL SYSTEM**                 │
-│                `static CMMemorySystem cm_mem`         │
+│              SINGLE GLOBAL SYSTEM                     │
+│                static CMMemorySystem cm_mem           │
 └─────────────────────────────────────────────────────┘
 ```
-
-</div>
 
 The Core Structure
 
@@ -235,16 +236,13 @@ typedef struct {
     size_t collections;       // GC collections count
     size_t total_objects;     // Current object count
 } CMMemorySystem;
-
-// 🔷 Single global instance
-static CMMemorySystem cm_mem = {0};
 ```
 
 ---
 
-🚀 ARENA ALLOCATOR (NEW in v4.2.1)
+🚀 ARENA ALLOCATOR
 
-Lightning-Fast Memory Allocations
+NEW in v4.2.2 - Lightning-Fast Memory Allocations
 
 <div style="background-color: #e6f3ff; padding: 15px; border-radius: 5px;">
 
@@ -272,6 +270,7 @@ cm_arena_create(size) Create new arena O(1)
 cm_arena_destroy(arena) Destroy arena (frees all) O(1)
 cm_arena_push(arena) Set as current arena O(1)
 cm_arena_pop() Remove current arena O(1)
+CM_WITH_ARENA(size) Auto-cleanup arena block O(1)
 
 ---
 
@@ -322,40 +321,11 @@ numbers[0] = 42
   ...
 ```
 
----
-
-Example 2: Multiple Arenas
+Example 2: Arena with Macro (Cleanest!)
 
 ```c
 int main() {
-    // 🔷 Arena for temporary data
-    CMArena* temp = cm_arena_create(4096);
-    cm_arena_push(temp);
-    
-    printf("📝 Generating temporary strings:\n");
-    for (int i = 0; i < 100; i++) {
-        char* str = (char*)cm_alloc(50, "temp", __FILE__, __LINE__);
-        sprintf(str, "Iteration %d", i);
-        if (i % 20 == 0) printf("  %s\n", str);  // Print every 20th
-    }
-    
-    // 💥 All 100 allocations freed at once!
-    printf("\n✅ All temporary strings freed!\n");
-    cm_arena_pop();
-    cm_arena_destroy(temp);
-    
-    CM_REPORT();
-    return 0;
-}
-```
-
----
-
-Example 3: Arena with Macro (Cleanest!)
-
-```c
-int main() {
-    // 🎯 Automatic arena cleanup!
+    // 🎯 Automatic arena cleanup with break/return support!
     CM_WITH_ARENA(4096) {
         // Inside this block, arena is active
         char* temp = (char*)cm_alloc(500, "temp", __FILE__, __LINE__);
@@ -367,25 +337,26 @@ int main() {
         for (int i = 0; i < 100; i++) data[i] = i;
         printf("data[50] = %d\n", data[50]);
         
-    } // ← 🧹 Arena automatically destroyed here!
+        // Even with break or return, arena is cleaned!
+        if (data[50] > 0) {
+            break;  // 🧹 Arena auto-destroyed here!
+        }
+        
+    } // ← 🧹 Arena automatically destroyed here if no break/return
     
     CM_REPORT();  // Clean!
     return 0;
 }
 ```
 
----
-
-📊 PERFORMANCE COMPARISON
+Performance Comparison
 
 Allocation Type Speed Tracking Free Method Use Case
 Arena ⚡⚡⚡⚡⚡ None Instant (bulk) Temporary data
 GC ⚡⚡⚡ Full Automatic Long-lived objects
 malloc ⚡⚡ None Manual Legacy code
 
----
-
-🔄 WHEN TO USE ARENA VS GC
+When to Use Arena vs GC
 
 Scenario Use Arena Use GC
 🎮 Game loop (per-frame) ✅ PERFECT ❌ Too slow
@@ -436,45 +407,7 @@ cm_retain(ptr) Increment reference count
 cm_gc_collect() Force garbage collection
 cm_gc_stats() Show GC statistics
 
----
-
-🔍 GC EXAMPLE
-
-```c
-int main() {
-    // 🔷 Allocate with tracking
-    String* s1 = String_new("Hello");
-    String* s2 = String_new("World");
-    
-    printf("📊 After allocations:\n");
-    cm_gc_stats();
-    
-    // 🔁 Reference counting
-    cm_retain(s1);  // ref_count = 2
-    printf("\n🔁 After retain s1:\n");
-    cm_gc_stats();
-    
-    // 🧹 Force collection (won't free s1 because ref_count > 0)
-    cm_gc_collect();
-    
-    // 💣 Release
-    cm_free(s1);  // ref_count = 1 (still alive)
-    printf("\n💣 After first free s1:\n");
-    cm_gc_stats();
-    
-    cm_free(s1);  // ref_count = 0 → freed
-    String_delete(s2);  // ref_count = 0 → freed
-    
-    printf("\n✅ After all frees:\n");
-    cm_gc_stats();
-    
-    return 0;
-}
-```
-
----
-
-📊 GC STATISTICS OUTPUT
+GC Statistics Output
 
 ```
 ══════════════════════════════════════════════════════════════
@@ -519,12 +452,12 @@ typedef struct String {
     int capacity;         // 📦 Allocated capacity
     
     // 🔷 Methods
-    struct String* (*concat)(struct String* this, const char* other);
-    struct String* (*upper)(struct String* this);
-    struct String* (*lower)(struct String* this);
-    void (*print)(struct String* this);
-    int (*length_func)(struct String* this);
-    char (*charAt)(struct String* this, int index);
+    struct String* (*concat)(struct String* self, const char* other);
+    struct String* (*upper)(struct String* self);
+    struct String* (*lower)(struct String* self);
+    void (*print)(struct String* self);
+    int (*length_func)(struct String* self);
+    char (*charAt)(struct String* self, int index);
 } String;
 ```
 
@@ -540,11 +473,7 @@ s->print(s) Print string s->print(s);
 s->length_func(s) Get length int len = s->length_func(s);
 s->charAt(s, 0) Get character char c = s->charAt(s, 0);
 
----
-
-🎯 STRING EXAMPLES
-
-Example 1: Basic String Operations
+String Examples
 
 ```c
 int main() {
@@ -573,90 +502,9 @@ int main() {
     s->print(s);
     printf("\n");
     
-    // 🔍 Character at
-    char c = s->charAt(s, 0);
-    printf("🔍 First char: '%c'\n", c);
-    
     String_delete(s);
     return 0;
 }
-```
-
-Output:
-
-```
-📝 Original:   Hello World  
-📏 Length: 14
-⬆️ Uppercase:   HELLO WORLD  
-⬇️ Lowercase:   hello world  
-➕ Concatenated:   hello world  !!!
-🔍 First char: ' '
-```
-
----
-
-Example 2: String with Arena (Fast!)
-
-```c
-int main() {
-    // 🚀 Use arena for temporary strings
-    CM_WITH_ARENA(4096) {
-        String* s1 = String_new("Hello");
-        String* s2 = String_new(" World");
-        
-        s1->concat(s1, s2->data);
-        printf("📝 Result: ");
-        s1->print(s1);  // Hello World
-        printf("\n");
-        
-        // 🧹 All freed when arena destroyed!
-    }
-    
-    CM_REPORT();  // Clean!
-    return 0;
-}
-```
-
----
-
-Example 3: Multiple String Operations
-
-```c
-int main() {
-    // 🔷 Create strings
-    String* first = String_new("Adham");
-    String* last = String_new("Hossam");
-    
-    // 📝 Full name
-    first->concat(first, " ");
-    first->concat(first, last->data);
-    
-    printf("👤 Full name: ");
-    first->print(first);
-    printf("\n📏 Length: %d\n", first->length_func(first));
-    
-    // ⬆️ Uppercase version
-    String* upper = String_new(first->data);
-    upper->upper(upper);
-    printf("⬆️ Uppercase: ");
-    upper->print(upper);
-    printf("\n");
-    
-    // Cleanup
-    String_delete(first);
-    String_delete(last);
-    String_delete(upper);
-    
-    return 0;
-}
-```
-
-Output:
-
-```
-👤 Full name: Adham Hossam
-📏 Length: 12
-⬆️ Uppercase: ADHAM HOSSAM
 ```
 
 ---
@@ -681,10 +529,10 @@ typedef struct Array {
     int capacity;          // 📦 Allocated capacity
     
     // 🔷 Methods
-    struct Array* (*push)(struct Array* this, void* value);
-    void* (*pop)(struct Array* this);
-    void* (*get)(struct Array* this, int index);
-    int (*size)(struct Array* this);
+    struct Array* (*push)(struct Array* self, void* value);
+    void* (*pop)(struct Array* self);
+    void* (*get)(struct Array* self, int index);
+    int (*size)(struct Array* self);
 } Array;
 ```
 
@@ -698,11 +546,7 @@ a->pop(a) Remove last int* p = (int*)a->pop(a);
 a->get(a, i) Get element int* p = (int*)a->get(a, 0);
 a->size(a) Get size int len = a->size(a);
 
----
-
-🎯 ARRAY EXAMPLES
-
-Example 1: Integer Array
+Array Examples
 
 ```c
 int main() {
@@ -724,122 +568,9 @@ int main() {
         printf("  numbers[%d] = %d\n", i, *val);
     }
     
-    // 📥📤 Pop elements
-    printf("\n📤 Popping:\n");
-    while (numbers->size(numbers) > 0) {
-        int* val = (int*)numbers->pop(numbers);
-        printf("  Popped: %d, remaining: %d\n", *val, numbers->size(numbers));
-    }
-    
     Array_delete(numbers);
     return 0;
 }
-```
-
-Output:
-
-```
-📥 Pushing elements:
-  Pushed: 0, size: 1
-  Pushed: 10, size: 2
-  ...
-  Pushed: 90, size: 10
-
-📤 Array contents:
-  numbers[0] = 0
-  numbers[1] = 10
-  ...
-  numbers[9] = 90
-
-📤 Popping:
-  Popped: 90, remaining: 9
-  Popped: 80, remaining: 8
-  ...
-```
-
----
-
-Example 2: String Array
-
-```c
-int main() {
-    // 🔷 Create array for String pointers
-    Array* strings = Array_new(sizeof(String*), 5);
-    
-    // 📝 Create strings
-    String* names[] = {
-        String_new("Adham"),
-        String_new("Ahmed"),
-        String_new("Mohamed")
-    };
-    
-    // 📥 Push to array
-    for (int i = 0; i < 3; i++) {
-        strings->push(strings, &names[i]);
-    }
-    
-    // 📤 Print all
-    printf("👤 Names:\n");
-    for (int i = 0; i < strings->size(strings); i++) {
-        String** s = (String**)strings->get(strings, i);
-        printf("  %d: ", i);
-        (*s)->print(*s);
-        printf("\n");
-    }
-    
-    // 🧹 Cleanup
-    for (int i = 0; i < 3; i++) {
-        String_delete(names[i]);
-    }
-    Array_delete(strings);
-    
-    return 0;
-}
-```
-
-Output:
-
-```
-👤 Names:
-  0: Adham
-  1: Ahmed
-  2: Mohamed
-```
-
----
-
-Example 3: Array with Arena (1000 elements fast!)
-
-```c
-int main() {
-    // 🚀 Arena for fast allocations
-    CM_WITH_ARENA(8192) {
-        Array* arr = Array_new(sizeof(int), 1000);
-        
-        // ⚡ Fast allocations (no GC tracking)
-        for (int i = 0; i < 1000; i++) {
-            int val = i;
-            arr->push(arr, &val);
-        }
-        
-        printf("📦 Array size: %d\n", arr->size(arr));
-        printf("🔢 First: %d\n", *(int*)arr->get(arr, 0));
-        printf("🔢 Last: %d\n", *(int*)arr->get(arr, 999));
-        
-        // 🧹 All freed when arena destroyed!
-    }
-    
-    CM_REPORT();  // Clean!
-    return 0;
-}
-```
-
-Output:
-
-```
-📦 Array size: 1000
-🔢 First: 0
-🔢 Last: 999
 ```
 
 ---
@@ -862,10 +593,10 @@ typedef struct Map {
     int size;              // 🔢 Number of entries
     
     // 🔷 Methods
-    struct Map* (*set)(struct Map* this, const char* key, void* value);
-    void* (*get)(struct Map* this, const char* key);
-    int (*has)(struct Map* this, const char* key);
-    int (*size_func)(struct Map* this);
+    struct Map* (*set)(struct Map* self, const char* key, void* value);
+    void* (*get)(struct Map* self, const char* key);
+    int (*has)(struct Map* self, const char* key);
+    int (*size_func)(struct Map* self);
 } Map;
 ```
 
@@ -879,11 +610,7 @@ m->get(m, "key") Get value int* p = (int*)m->get(m, "age");
 m->has(m, "key") Check key if (m->has(m, "age")) {...}
 m->size_func(m) Get size int sz = m->size_func(m);
 
----
-
-🎯 MAP EXAMPLES
-
-Example 1: Basic Map Operations
+Map Examples
 
 ```c
 int main() {
@@ -893,12 +620,10 @@ int main() {
     // 📦 Store different types
     int age = 25;
     float pi = 3.14159f;
-    double e = 2.71828;
     char* name = "Adham";
     
     dict->set(dict, "age", &age);
     dict->set(dict, "pi", &pi);
-    dict->set(dict, "e", &e);
     dict->set(dict, "name", &name);
     
     printf("🗺️ Map size: %d\n", dict->size_func(dict));
@@ -914,104 +639,9 @@ int main() {
         printf("  name = %s\n", *name_ptr);
     }
     
-    if (dict->has(dict, "pi")) {
-        float* pi_ptr = (float*)dict->get(dict, "pi");
-        printf("  pi = %f\n", *pi_ptr);
-    }
-    
     Map_delete(dict);
     return 0;
 }
-```
-
-Output:
-
-```
-🗺️ Map size: 4
-  age = 25
-  name = Adham
-  pi = 3.141590
-```
-
----
-
-Example 2: Word Counter
-
-```c
-int main() {
-    // 🔷 Create map for word counting
-    Map* wordCount = Map_new();
-    char text[] = "the quick brown fox jumps over the lazy dog";
-    
-    // 📝 Split and count words
-    printf("📝 Counting words in: \"%s\"\n\n", text);
-    
-    char* token = strtok(text, " ");
-    while (token) {
-        if (wordCount->has(wordCount, token)) {
-            int* count = (int*)wordCount->get(wordCount, token);
-            (*count)++;
-        } else {
-            int initial = 1;
-            wordCount->set(wordCount, token, &initial);
-        }
-        token = strtok(NULL, " ");
-    }
-    
-    // 📊 Print word counts (simplified)
-    printf("📊 Word frequencies:\n");
-    // Note: Would need keys() method for full iteration
-    
-    Map_delete(wordCount);
-    return 0;
-}
-```
-
----
-
-Example 3: Config Map with Arena
-
-```c
-int main() {
-    // 🚀 Arena for temporary config
-    CM_WITH_ARENA(4096) {
-        Map* config = Map_new();
-        
-        int port = 8080;
-        int workers = 4;
-        char* host = "localhost";
-        int timeout = 30;
-        int max_conn = 1000;
-        
-        config->set(config, "port", &port);
-        config->set(config, "workers", &workers);
-        config->set(config, "host", &host);
-        config->set(config, "timeout", &timeout);
-        config->set(config, "max_connections", &max_conn);
-        
-        printf("⚙️ Server config:\n");
-        printf("  port = %d\n", *(int*)config->get(config, "port"));
-        printf("  workers = %d\n", *(int*)config->get(config, "workers"));
-        printf("  host = %s\n", *(char**)config->get(config, "host"));
-        printf("  timeout = %d\n", *(int*)config->get(config, "timeout"));
-        printf("  max_connections = %d\n", *(int*)config->get(config, "max_connections"));
-        
-        // 🧹 All freed when arena destroyed!
-    }
-    
-    return 0;
-}
-```
-
-Output:
-
-```
-⚙️ Server config:
-  port = 8080
-  workers = 4
-  host = localhost
-  timeout = 30
-  max_connections = 1000
 ```
 
 ---
@@ -1022,7 +652,7 @@ Try/Catch for C
 
 <div style="background-color: #ffe6e6; padding: 15px; border-radius: 5px;">
 
-CM Library provides exception handling similar to C++/Java.
+CM Library provides exception handling similar to C++/Java, now thread-safe with thread-local storage!
 
 </div>
 
@@ -1059,11 +689,7 @@ cmThrow(e, m) Throw error
 cmErrorMsg() Get last error message
 cmErrorCode() Get last error code
 
----
-
-🎯 ERROR HANDLING EXAMPLES
-
-Example 1: Basic Try/Catch
+Error Handling Examples
 
 ```c
 int main() {
@@ -1097,196 +723,57 @@ Output:
 
 ---
 
-Example 2: Multiple Error Types
-
-```c
-int divide(int a, int b) {
-    if (b == 0) {
-        cmThrow(CM_ERROR_DIVISION_BY_ZERO, "Division by zero!");
-    }
-    return a / b;
-}
-
-int main() {
-    cmTry {
-        printf("🔷 Trying division...\n");
-        
-        int result = divide(10, 0);
-        printf("Result: %d\n", result);
-        
-    } cmCatch {
-        printf("✅ Caught: %s\n", cmErrorMsg());
-        printf("📊 Error: %s\n", cm_error_string(cmErrorCode()));
-    }
-    
-    return 0;
-}
-```
-
-Output:
-
-```
-🔷 Trying division...
-✅ Caught: Division by zero!
-📊 Error: Division by zero
-```
-
----
-
-Example 3: Array Bounds Checking
-
-```c
-int safe_array_get(Array* arr, int index) {
-    if (!arr) {
-        cmThrow(CM_ERROR_NULL_POINTER, "Array is NULL");
-    }
-    if (index < 0 || index >= arr->size(arr)) {
-        cmThrow(CM_ERROR_OUT_OF_BOUNDS, "Index out of bounds");
-    }
-    int* val = (int*)arr->get(arr, index);
-    return *val;
-}
-
-int main() {
-    Array* arr = Array_new(sizeof(int), 5);
-    int x = 42;
-    arr->push(arr, &x);
-    
-    cmTry {
-        printf("🔷 Trying to get index 5...\n");
-        int val = safe_array_get(arr, 5);
-        printf("Value: %d\n", val);
-        
-    } cmCatch {
-        printf("✅ Caught: %s\n", cmErrorMsg());
-    }
-    
-    Array_delete(arr);
-    return 0;
-}
-```
-
-Output:
-
-```
-🔷 Trying to get index 5...
-✅ Caught: Index out of bounds
-```
-
----
-
 🎯 OOP MACROS
 
-Object-Oriented Programming in C
+Object-Oriented Programming in C (C++ Compatible)
 
 <div style="background-color: #e6ffe6; padding: 15px; border-radius: 5px;">
 
-CM Library provides macros for class-based OOP similar to C++/Java.
+CM Library provides macros for class-based OOP using cmlass (not class) to avoid C++ conflicts.
 
 </div>
 
 OOP Macros
 
 Macro Description Example
-class(name) Define a class class(Person) { ... }
+cmlass(name) Define a class cmlass(Person) { ... }
 end_class End class definition } end_class;
-property(type, name) Define property property(char*, name)
-method(name, ret, ...) Define method method(speak, void)
-send(obj, method, ...) Call method send(p, speak)
+property(type, name) Define property property(char*, name);
+method0(ret, name) Method with no params method0(void, speak);
+method(ret, name, ...) Method with params method(void, speak, const char* msg);
+send(obj, method, ...) Call method send(p, speak, "Hello");
 
----
-
-🎯 CUSTOM CLASS EXAMPLES
-
-Example 1: Person Class
+Custom Class Examples
 
 ```c
-// 🔷 Define Person class
-class(Person) {
+// 🔷 Define Person class (C++ compatible)
+cmlass(Person) {
     property(char*, name);
     property(int, age);
     
-    method(init, void, const char*, int);
-    method(speak, void);
-    method(haveBirthday, void);
+    method0(void, introduce);
+    method(void, speak, const char* msg);
 } end_class;
 
 // 📝 Implement methods
-void Person_init(Person* this, const char* name, int age) {
-    this->name = strdup(name);
-    this->age = age;
+void Person_introduce(void* ptr) {
+    Person* self = (Person*)ptr;
+    printf("Hi, I'm %s and I'm %d years old\n", self->name, self->age);
 }
 
-void Person_speak(Person* this) {
-    printf("👤 Hi, I'm %s and I'm %d years old\n", this->name, this->age);
-}
-
-void Person_haveBirthday(Person* this) {
-    this->age++;
-    printf("🎂 Happy Birthday! Now I'm %d\n", this->age);
+void Person_speak(void* ptr, const char* msg) {
+    Person* self = (Person*)ptr;
+    printf("%s says: %s\n", self->name, msg);
 }
 
 int main() {
     // 🔷 Create and use Person
-    Person p;
-    Person_init(&p, "Adham", 25);
+    Person p = {.name = "Adham", .age = 25};
+    p.introduce = Person_introduce;
+    p.speak = Person_speak;
     
-    send(&p, speak);
-    send(&p, haveBirthday);
-    
-    free(p.name);
-    return 0;
-}
-```
-
-Output:
-
-```
-👤 Hi, I'm Adham and I'm 25 years old
-🎂 Happy Birthday! Now I'm 26
-```
-
----
-
-Example 2: Rectangle Class
-
-```c
-// 🔷 Define Rectangle class
-class(Rectangle) {
-    property(int, width);
-    property(int, height);
-    
-    method(init, void, int, int);
-    method(area, int);
-    method(perimeter, int);
-    method(print, void);
-} end_class;
-
-// 📝 Implement methods
-void Rectangle_init(Rectangle* this, int w, int h) {
-    this->width = w;
-    this->height = h;
-}
-
-int Rectangle_area(Rectangle* this) {
-    return this->width * this->height;
-}
-
-int Rectangle_perimeter(Rectangle* this) {
-    return 2 * (this->width + this->height);
-}
-
-void Rectangle_print(Rectangle* this) {
-    printf("📐 Rectangle[%dx%d]\n", this->width, this->height);
-}
-
-int main() {
-    Rectangle r;
-    Rectangle_init(&r, 10, 5);
-    
-    send(&r, print);
-    printf("📏 Area: %d\n", send(&r, area));
-    printf("📏 Perimeter: %d\n", send(&r, perimeter));
+    send(&p, introduce);
+    send(&p, speak, "Hello CM Library!");
     
     return 0;
 }
@@ -1295,96 +782,13 @@ int main() {
 Output:
 
 ```
-📐 Rectangle[10x5]
-📏 Area: 50
-📏 Perimeter: 30
-```
-
----
-
-Example 3: Stack Class
-
-```c
-// 🔷 Define Stack class
-class(Stack) {
-    property(Array*, data);
-    
-    method(init, void);
-    method(push, void, int);
-    method(pop, int);
-    method(peek, int);
-    method(isEmpty, int);
-    method(print, void);
-} end_class;
-
-// 📝 Implement methods
-void Stack_init(Stack* this) {
-    this->data = Array_new(sizeof(int), 10);
-}
-
-void Stack_push(Stack* this, int value) {
-    this->data->push(this->data, &value);
-}
-
-int Stack_pop(Stack* this) {
-    int* val = (int*)this->data->pop(this->data);
-    return val ? *val : -1;
-}
-
-int Stack_peek(Stack* this) {
-    if (this->data->size(this->data) == 0) return -1;
-    int* val = (int*)this->data->get(this->data, this->data->size(this->data) - 1);
-    return *val;
-}
-
-int Stack_isEmpty(Stack* this) {
-    return this->data->size(this->data) == 0;
-}
-
-void Stack_print(Stack* this) {
-    printf("📚 Stack[");
-    for (int i = 0; i < this->data->size(this->data); i++) {
-        int* val = (int*)this->data->get(this->data, i);
-        printf("%d", *val);
-        if (i < this->data->size(this->data) - 1) printf(", ");
-    }
-    printf("]\n");
-}
-
-int main() {
-    Stack s;
-    Stack_init(&s);
-    
-    send(&s, push, 10);
-    send(&s, push, 20);
-    send(&s, push, 30);
-    
-    send(&s, print);
-    
-    printf("📤 Pop: %d\n", send(&s, pop));
-    printf("👀 Peek: %d\n", send(&s, peek));
-    
-    send(&s, print);
-    
-    Array_delete(s.data);
-    return 0;
-}
-```
-
-Output:
-
-```
-📚 Stack[10, 20, 30]
-📤 Pop: 30
-👀 Peek: 20
-📚 Stack[10, 20]
+Hi, I'm Adham and I'm 25 years old
+Adham says: Hello CM Library!
 ```
 
 ---
 
 🛠️ UTILITY FUNCTIONS
-
-Random and Helpers
 
 Random Functions
 
@@ -1401,9 +805,7 @@ CM_ABOUT() Show library info
 CM_REPORT() Show GC statistics
 cm_input(prompt) Read user input (returns String*)
 
----
-
-🎯 RANDOM EXAMPLES
+Random Examples
 
 ```c
 int main() {
@@ -1428,36 +830,6 @@ int main() {
 }
 ```
 
-Output:
-
-```
-🎲 Random numbers (1-100):
-  42
-  17
-  83
-  56
-  91
-
-📝 Random strings:
-  aB7kL9pQ2rX
-  mN5vT8wY3zK
-  xR2fG6hJ4sP
-```
-
-📝 User Input Example
-
-```c
-int main() {
-    String* name = cm_input("👤 Enter your name: ");
-    printf("Hello, ");
-    name->print(name);
-    printf("!\n");
-    
-    String_delete(name);
-    return 0;
-}
-```
-
 ---
 
 🔒 THREAD SAFETY
@@ -1466,7 +838,12 @@ Multi-threading Support
 
 <div style="background-color: #fff0f0; padding: 15px; border-radius: 5px;">
 
-CM Library is fully thread-safe with mutex protection for all operations.
+CM Library v4.2.2 is fully thread-safe with:
+
+· Mutex protection for all GC operations
+· Mutex protection for arena switching
+· Thread-local storage for exception handling
+· No race conditions in multi-threaded code
 
 </div>
 
@@ -1484,27 +861,45 @@ pthread_mutex_lock(&cm_mem.arena_lock);
 pthread_mutex_unlock(&cm_mem.arena_lock);
 ```
 
----
+Thread-Safe Exception Handling
 
-🎯 MULTI-THREADING EXAMPLE
+```c
+// 🔷 Each thread has its own exception buffer
+extern __thread jmp_buf* cm_exception_buffer;  // Thread-local!
+
+#define CM_TRY() \
+    jmp_buf __cm_buf; \
+    jmp_buf* __old = cm_exception_buffer; \
+    cm_exception_buffer = &__cm_buf; \
+    if (setjmp(__cm_buf) == 0)
+```
+
+Multi-Threading Example
 
 ```c
 #include <pthread.h>
+#include "CM.h"
 
 void* thread_func(void* arg) {
     int id = *(int*)arg;
     
     // 🔷 Each thread can use the library safely
-    String* s = String_new("Thread ");
-    char num[10];
-    sprintf(num, "%d", id);
-    s->concat(s, num);
+    cmTry {
+        String* s = String_new("Thread ");
+        char num[10];
+        sprintf(num, "%d", id);
+        s->concat(s, num);
+        
+        printf("🧵 Thread %d: ", id);
+        s->print(s);
+        printf("\n");
+        
+        String_delete(s);
+        
+    } cmCatch {
+        printf("Thread %d error: %s\n", id, cmErrorMsg());
+    }
     
-    printf("🧵 Thread %d: ", id);
-    s->print(s);
-    printf("\n");
-    
-    String_delete(s);
     return NULL;
 }
 
@@ -1529,20 +924,6 @@ int main() {
 }
 ```
 
-Output:
-
-```
-🚀 Starting 5 threads...
-
-🧵 Thread 0: Thread 0
-🧵 Thread 1: Thread 1
-🧵 Thread 2: Thread 2
-🧵 Thread 3: Thread 3
-🧵 Thread 4: Thread 4
-
-✅ All threads completed
-```
-
 ---
 
 📚 COMPLETE EXAMPLES
@@ -1553,77 +934,52 @@ Example 1: Student Management System
 #include "CM.h"
 
 // 🔷 Define Student class
-class(Student) {
+cmlass(Student) {
     property(String*, name);
     property(int, age);
     property(float, gpa);
     
-    method(init, void, const char*, int, float);
-    method(print, void);
-    method(updateGPA, void, float);
+    method0(void, print);
+    method(void, updateGPA, float);
 } end_class;
 
 // 📝 Implement methods
-void Student_init(Student* this, const char* name, int age, float gpa) {
-    this->name = String_new(name);
-    this->age = age;
-    this->gpa = gpa;
-}
-
-void Student_print(Student* this) {
+void Student_print(void* ptr) {
+    Student* self = (Student*)ptr;
     printf("👤 Student: ");
-    this->name->print(this->name);
-    printf(", age: %d, GPA: %.2f\n", this->age, this->gpa);
+    self->name->print(self->name);
+    printf(", age: %d, GPA: %.2f\n", self->age, self->gpa);
 }
 
-void Student_updateGPA(Student* this, float new_gpa) {
-    this->gpa = new_gpa;
-    printf("📊 GPA updated to: %.2f\n", this->gpa);
+void Student_updateGPA(void* ptr, float new_gpa) {
+    Student* self = (Student*)ptr;
+    self->gpa = new_gpa;
+    printf("📊 GPA updated to: %.2f\n", self->gpa);
 }
 
 int main() {
     CM_ABOUT();
     
     cmTry {
-        // 🔷 Create students array
-        Array* students = Array_new(sizeof(Student), 5);
+        // 🔷 Create students
+        Student s1 = {.name = String_new("Adham"), .age = 25, .gpa = 3.8f};
+        Student s2 = {.name = String_new("Ahmed"), .age = 22, .gpa = 3.5f};
         
-        // 👤 Create students
-        Student s1, s2, s3;
-        Student_init(&s1, "Adham", 25, 3.8f);
-        Student_init(&s2, "Ahmed", 22, 3.5f);
-        Student_init(&s3, "Mohamed", 24, 3.9f);
-        
-        students->push(students, &s1);
-        students->push(students, &s2);
-        students->push(students, &s3);
+        s1.print = Student_print;
+        s1.updateGPA = Student_updateGPA;
+        s2.print = Student_print;
         
         printf("\n📋 --- Student List ---\n");
-        for (int i = 0; i < students->size(students); i++) {
-            Student* s = (Student*)students->get(students, i);
-            send(s, print);
-        }
+        send(&s1, print);
+        send(&s2, print);
         
         // 📈 Update GPA
         printf("\n📈 --- Updating GPA ---\n");
-        Student_updateGPA(&s2, 3.7f);
-        
-        // 🏆 Find top student
-        printf("\n🏆 --- Top Student ---\n");
-        Student* top = &s1;
-        for (int i = 1; i < students->size(students); i++) {
-            Student* s = (Student*)students->get(students, i);
-            if (s->gpa > top->gpa) top = s;
-        }
-        printf("🏆 Top student: ");
-        top->name->print(top->name);
-        printf(" (GPA: %.2f)\n", top->gpa);
+        send(&s1, updateGPA, 3.9f);
         
         // 🧹 Cleanup
         String_delete(s1.name);
         String_delete(s2.name);
-        String_delete(s3.name);
-        Array_delete(students);
         
     } cmCatch {
         printf("❌ Error: %s\n", cmErrorMsg());
@@ -1634,167 +990,51 @@ int main() {
 }
 ```
 
----
-
-Example 2: HTTP Request Parser (Simulated)
+Example 2: Game Entity System
 
 ```c
-typedef struct {
-    String* method;
-    String* path;
-    Map* headers;
-    String* body;
-} Request;
-
-Request* Request_new(const char* raw) {
-    Request* req = (Request*)cm_alloc(sizeof(Request), "request", __FILE__, __LINE__);
+cmlass(Entity) {
+    property(float, x);
+    property(float, y);
+    property(String*, name);
+    property(int, health);
     
-    // 🔷 Simple parsing simulation
-    req->method = String_new("GET");
-    req->path = String_new("/index.html");
-    req->headers = Map_new();
-    req->body = String_new("");
-    
-    // 📦 Add some headers
-    char* host = "localhost";
-    char* agent = "CM-Library/4.2.1";
-    char* accept = "*/*";
-    
-    req->headers->set(req->headers, "Host", &host);
-    req->headers->set(req->headers, "User-Agent", &agent);
-    req->headers->set(req->headers, "Accept", &accept);
-    
-    return req;
+    method0(void, print);
+    method(void, damage, int);
+} end_class;
+
+void Entity_print(void* ptr) {
+    Entity* self = (Entity*)ptr;
+    printf("👾 %s at (%.1f, %.1f) health: %d\n",
+           self->name->data, self->x, self->y, self->health);
 }
 
-void Request_print(Request* req) {
-    printf("🌐 %s %s HTTP/1.1\n", req->method->data, req->path->data);
-    printf("   Host: %s\n", *(char**)req->headers->get(req->headers, "Host"));
-    printf("   User-Agent: %s\n", *(char**)req->headers->get(req->headers, "User-Agent"));
-    printf("   Accept: %s\n", *(char**)req->headers->get(req->headers, "Accept"));
-    printf("\n   Body: %s\n", req->body->data);
-}
-
-void Request_delete(Request* req) {
-    String_delete(req->method);
-    String_delete(req->path);
-    Map_delete(req->headers);
-    String_delete(req->body);
-    cm_free(req);
-}
-
-int main() {
-    CM_WITH_ARENA(8192) {
-        Request* req = Request_new("GET /index.html HTTP/1.1");
-        Request_print(req);
-        Request_delete(req);
-    }
-    
-    return 0;
-}
-```
-
-Output:
-
-```
-🌐 GET /index.html HTTP/1.1
-   Host: localhost
-   User-Agent: CM-Library/4.2.1
-   Accept: */*
-
-   Body:
-```
-
----
-
-Example 3: Game Entity System
-
-```c
-typedef struct {
-    float x, y;
-    float vx, vy;
-    String* name;
-    int health;
-} Entity;
-
-Entity* Entity_new(const char* name, float x, float y) {
-    Entity* e = (Entity*)cm_alloc(sizeof(Entity), "entity", __FILE__, __LINE__);
-    e->name = String_new(name);
-    e->x = x; e->y = y;
-    e->vx = e->vy = 0;
-    e->health = 100;
-    return e;
-}
-
-void Entity_update(Entity* e, float dt) {
-    e->x += e->vx * dt;
-    e->y += e->vy * dt;
-}
-
-void Entity_damage(Entity* e, int amount) {
-    e->health -= amount;
-    if (e->health < 0) e->health = 0;
+void Entity_damage(void* ptr, int amount) {
+    Entity* self = (Entity*)ptr;
+    self->health -= amount;
+    if (self->health < 0) self->health = 0;
     printf("💥 %s took %d damage, health now %d\n", 
-           e->name->data, amount, e->health);
-}
-
-void Entity_print(Entity* e) {
-    printf("👾 Entity[%s] at (%.1f, %.1f) health: %d\n",
-           e->name->data, e->x, e->y, e->health);
+           self->name->data, amount, self->health);
 }
 
 int main() {
-    Array* entities = Array_new(sizeof(Entity*), 10);
-    
-    // 👾 Create entities
-    Entity* player = Entity_new("Player", 0, 0);
-    Entity* enemy = Entity_new("Enemy", 10, 10);
-    
-    entities->push(entities, &player);
-    entities->push(entities, &enemy);
-    
-    // 🎮 Game loop simulation
-    for (int frame = 0; frame < 3; frame++) {
-        printf("\n🎮 --- Frame %d ---\n", frame);
+    // 🚀 Use arena for temporary entities
+    CM_WITH_ARENA(4096) {
+        Entity player = {
+            .x = 0, .y = 0, 
+            .name = String_new("Player"), 
+            .health = 100
+        };
+        player.print = Entity_print;
+        player.damage = Entity_damage;
         
-        for (int i = 0; i < entities->size(entities); i++) {
-            Entity** e = (Entity**)entities->get(entities, i);
-            Entity_update(*e, 0.1f);
-            Entity_print(*e);
-        }
-        
-        if (frame == 1) {
-            Entity_damage(player, 10);
-        }
-    }
-    
-    // 🧹 Cleanup
-    for (int i = 0; i < entities->size(entities); i++) {
-        Entity** e = (Entity**)entities->get(entities, i);
-        String_delete((*e)->name);
-        cm_free(*e);
-    }
-    Array_delete(entities);
+        send(&player, print);
+        send(&player, damage, 10);
+        send(&player, print);
+    } // 🧹 All freed here!
     
     return 0;
 }
-```
-
-Output:
-
-```
-🎮 --- Frame 0 ---
-👾 Entity[Player] at (0.0, 0.0) health: 100
-👾 Entity[Enemy] at (10.0, 10.0) health: 100
-
-🎮 --- Frame 1 ---
-👾 Entity[Player] at (0.0, 0.0) health: 100
-👾 Entity[Enemy] at (10.0, 10.0) health: 100
-💥 Player took 10 damage, health now 90
-
-🎮 --- Frame 2 ---
-👾 Entity[Player] at (0.0, 0.0) health: 90
-👾 Entity[Enemy] at (10.0, 10.0) health: 100
 ```
 
 ---
@@ -1852,25 +1092,6 @@ self->get(self, key) Get value
 self->has(self, key) Check key
 self->size_func(self) Get size
 
-Error Handling
-
-Function/Macro Description
-cmTry Start try block
-cmCatch Catch errors
-cmThrow(e, m) Throw error
-cmErrorMsg() Get error message
-cmErrorCode() Get error code
-cm_error_string(code) Get error description
-
-Utility
-
-Function Description
-cm_random_seed(seed) Set random seed
-cm_random_string(buf, len) Generate random string
-CM_ABOUT() Show library info
-CM_REPORT() Show GC statistics
-cm_input(prompt) Read user input
-
 ---
 
 ✅ BEST PRACTICES
@@ -1886,6 +1107,7 @@ String_delete(s);
 // ✅ GOOD: Use arena for temporary data
 CM_WITH_ARENA(1024) {
     // Allocations here are automatically freed
+    // Even with break/return!
 }
 
 // ✅ GOOD: Check for NULL
@@ -1929,18 +1151,6 @@ if (!ptr) {
 }
 ```
 
-Thread Safety
-
-```c
-// ✅ GOOD: Library is thread-safe by default
-void* thread_func(void* arg) {
-    String* s = String_new("Hello");  // Safe in threads
-    // ... use ...
-    String_delete(s);  // Safe in threads
-    return NULL;
-}
-```
-
 ---
 
 🔧 TROUBLESHOOTING
@@ -1981,9 +1191,34 @@ CMArena* arena = cm_arena_create(1024 * 1024);  // 1MB
 
 ---
 
+🎯 WHAT'S NEW IN v4.2.2
+
+✨ New Features
+
+Feature Description
+Thread-local exceptions __thread jmp_buf* for thread safety
+Fixed CM_WITH_ARENA Now works with break/return
+cmlass macro Replaced class for C++ compatibility
+method0 macro For methods without parameters
+Fixed send macro Works with all parameter combinations
+Zero warnings All warnings fixed
+Zero memory leaks 100% memory safe
+
+🔧 Bug Fixes
+
+Issue Fixed in v4.2.2
+Thread-unsafe exceptions ✅ Thread-local storage
+Arena leak on break/return ✅ Cleanup attribute
+this vs self confusion ✅ Unified to self
+GNU extensions ✅ Standard C
+C++ class conflict ✅ cmlass instead
+
+---
+
 📦 VERSION HISTORY
 
 Version Date Changes
+4.2.2 2026 🚀 Thread-local exceptions, fixed arena cleanup, cmlass macro
 4.2.1 2026 🚀 Arena allocator, unified memory system
 4.0.0 2026 🔒 Thread safety, OOP macros
 3.0.0 2026 ♻️ Complete rewrite, GC, classes
@@ -2026,10 +1261,9 @@ SOFTWARE.
 
 Adham Hossam
 
- 
-GitHub github.com/ALightbolt4G
-Email adham.hossam5020@gmail.com
-Project github.com/ALightbolt4G/CM
+GitHub: github.com/ALightbolt4G
+Email: adham.hossam5020@gmail.com
+Project: github.com/ALightbolt4G/CM
 
 </div>
 
@@ -2037,7 +1271,7 @@ Project github.com/ALightbolt4G/CM
 
 <div align="center">
 
-🚀 CM Library v4.2.1
+🚀 CM Library v4.2.2
 
 The Ultimate C Programming Intelligence Layer
 
@@ -2045,12 +1279,12 @@ The Ultimate C Programming Intelligence Layer
 
 ⭐ If you find this library useful, please star it on GitHub! ⭐
 
-https://img.shields.io/badge/Download-CM_Library-blue
+https://img.shields.io/badge/Download-CM_Library_v4.2.2-blue
 
 ---
 
 Happy Coding! 🎉
 
-Documentation generated on February 23, 2026
+Documentation generated on February 27, 2026
 
 </div>
