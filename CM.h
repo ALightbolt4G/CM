@@ -36,7 +36,7 @@
 /* ============================================================================
  * CONFIGURATION
  * ============================================================================ */
-#define CM_VERSION "4.2.1"
+#define CM_VERSION "4.2.2"
 #define CM_AUTHOR "Adham Hossam"
 #define CM_GC_THRESHOLD (1024 * 1024)
 #define CM_LOG_LEVEL 3
@@ -64,6 +64,7 @@
 #define CM_ERROR_TYPE                   17
 #define CM_ERROR_UNIMPLEMENTED          18
 #define CM_ERROR_UNKNOWN                19
+#define CM_ERROR_TEST                   20
 
 /* ============================================================================
  * FORWARD DECLARATIONS
@@ -167,12 +168,12 @@ struct String {
     char* data;
     int length;
     int capacity;
-    struct String* (*concat)(struct String* this, const char* other);
-    struct String* (*upper)(struct String* this);
-    struct String* (*lower)(struct String* this);
-    void (*print)(struct String* this);
-    int (*length_func)(struct String* this);
-    char (*charAt)(struct String* this, int index);
+    struct String* (*concat)(struct String* self, const char* other);
+    struct String* (*upper)(struct String* self);
+    struct String* (*lower)(struct String* self);
+    void (*print)(struct String* self);
+    int (*length_func)(struct String* self);
+    char (*charAt)(struct String* self, int index);
 };
 
 // 8. OOP Array Class
@@ -181,36 +182,41 @@ struct Array {
     int element_size;
     int length;
     int capacity;
-    struct Array* (*push)(struct Array* this, void* value);
-    void* (*pop)(struct Array* this);
-    void* (*get)(struct Array* this, int index);
-    int (*size)(struct Array* this);
+    struct Array* (*push)(struct Array* self, void* value);
+    void* (*pop)(struct Array* self);
+    void* (*get)(struct Array* self, int index);
+    int (*size)(struct Array* self);
 };
 
 // 9. OOP Map Class
 struct Map {
     void* map_data;
     int size;
-    struct Map* (*set)(struct Map* this, const char* key, void* value);
-    void* (*get)(struct Map* this, const char* key);
-    int (*has)(struct Map* this, const char* key);
-    int (*size_func)(struct Map* this);
+    struct Map* (*set)(struct Map* self, const char* key, void* value);
+    void* (*get)(struct Map* self, const char* key);
+    int (*has)(struct Map* self, const char* key);
+    int (*size_func)(struct Map* self);
 };
 
 /* ============================================================================
  * MACROS
  * ============================================================================ */
 #define CM_WITH_ARENA(size) \
-    for (CMArena* _a = cm_arena_create(size); _a; (cm_arena_destroy(_a), _a = NULL)) \
+    for (CMArena* _a __attribute__((cleanup(cm_arena_cleanup))) = cm_arena_create(size); \
+         _a; _a = NULL) \
         for (int _i = (cm_arena_push(_a), 0); _i < 1; _i++)
+
+// في CM.h
+extern __thread jmp_buf* cm_exception_buffer;  // Thread-local storage
 
 #define CM_TRY() \
     jmp_buf __cm_buf; \
+    jmp_buf* __old = cm_exception_buffer; \
     cm_exception_buffer = &__cm_buf; \
     if (setjmp(__cm_buf) == 0)
 
 #define CM_CATCH() \
-    else
+    else { cm_exception_buffer = __old; }
 
 #define CM_THROW(error, message) \
     do { \
@@ -267,20 +273,27 @@ struct Map {
 #define CM_REPORT() cm_gc_stats()
 
 /* ============================================================================
- * OOP MACROS
+ * OOP MACROS - الإصدار النهائي
  * ============================================================================ */
-#define class(name) \
+#define cmlass(name) \
     typedef struct name name; \
     struct name
 
-#define end_class ;
+#define end_class
 
 #define property(type, name) type name;
 
-#define method(class, func, return_type, ...) \
-    return_type (*func)(class* this, ##__VA_ARGS__);
+// للدوال بدون parameters
+#define method0(return_type, name) \
+    return_type (*name)(void* self)
 
-#define send(obj, func, ...) ((obj)->func(obj, ##__VA_ARGS__))
+// للدوال مع parameters
+#define method(return_type, name, ...) \
+    return_type (*name)(void* self, __VA_ARGS__)
+
+// ماكرو لنداء الدوال - بيشتغل مع وبدون parameters
+#define send(obj, method, ...) \
+    ((obj)->method ? (obj)->method(obj, ##__VA_ARGS__) : (void)0)
 
 /* ============================================================================
  * FUNCTION DECLARATIONS
@@ -299,6 +312,9 @@ CMArena* cm_arena_create(size_t size);
 void cm_arena_destroy(CMArena* arena);
 void cm_arena_push(CMArena* arena);
 void cm_arena_pop(void);
+// في CM.h - أضف هذا السطر مع الدوال التانية
+void cm_arena_cleanup(void* ptr);
+
 
 /* String Functions */
 cm_string_t* cm_string_new(const char* initial);
@@ -333,26 +349,26 @@ void cm_random_string(char* buffer, size_t length);
 /* OOP Class Functions */
 String* String_new(const char* initial);
 void String_delete(String* self);
-String* string_concat(String* this, const char* other);
-String* string_upper(String* this);
-String* string_lower(String* this);
-void string_print(String* this);
-int string_length(String* this);
-char string_charAt(String* this, int index);
+String* string_concat(String* self, const char* other);
+String* string_upper(String* self);
+String* string_lower(String* self);
+void string_print(String* self);
+int string_length(String* self);
+char string_charAt(String* self, int index);
 
 Array* Array_new(int element_size, int capacity);
 void Array_delete(Array* self);
-Array* array_push(Array* this, void* value);
-void* array_pop(Array* this);
-void* array_get(Array* this, int index);
-int array_size(Array* this);
+Array* array_push(Array* self, void* value);
+void* array_pop(Array* self);
+void* array_get(Array* self, int index);
+int array_size(Array* self);
 
 Map* Map_new(void);
 void Map_delete(Map* self);
-Map* map_set(Map* this, const char* key, void* value);
-void* map_get(Map* this, const char* key);
-int map_has(Map* this, const char* key);
-int map_size_func(Map* this);
+Map* map_set(Map* self, const char* key, void* value);
+void* map_get(Map* self, const char* key);
+int map_has(Map* self, const char* key);
+int map_size_func(Map* self);
 
 /* Error Handling Functions */
 const char* cm_error_string(int error);
@@ -402,8 +418,8 @@ void cm_error_set(int error, const char* message);
 /* ============================================================================
  * GLOBAL VARIABLES DECLARATIONS
  * ============================================================================ */
-extern jmp_buf* cm_exception_buffer;
 extern int cm_last_error;
 extern char cm_error_message[1024];
 
 #endif /* CM_H */
+
